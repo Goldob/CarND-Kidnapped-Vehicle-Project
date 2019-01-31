@@ -20,18 +20,28 @@
 
 using std::string;
 using std::vector;
+using std::normal_distribution;
 
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
-  /**
-   * TODO: Set the number of particles. Initialize all particles to 
-   *   first position (based on estimates of x, y, theta and their uncertainties
-   *   from GPS) and all weights to 1. 
-   * TODO: Add random Gaussian noise to each particle.
-   * NOTE: Consult particle_filter.h for more information about this method 
-   *   (and others in this file).
-   */
-  num_particles = 0;  // TODO: Set the number of particles
+  
+  // Set number of particles
+  num_particles = 50; 
 
+  // Define probability distribution for the initial state
+  normal_distribution<double> dist_x(x, std[0]);
+  normal_distribution<double> dist_y(y, std[1]);
+  normal_distribution<double> dist_theta(theta, std[2]);
+  
+  // Draw particles from the distribution
+  for (int i = 0; i < num_particles; i++) {
+    Particle particle;
+    
+    particle.x = dist_x(generator);
+    particle.y = dist_x(generator);
+    particle.theta = dist_theta(generator);
+      
+    particles.push_back(particle);
+  }
 }
 
 void ParticleFilter::prediction(double delta_t, double std_pos[], 
