@@ -114,7 +114,24 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
    *   and the following is a good resource for the actual equation to implement
    *   (look at equation 3.33) http://planning.cs.uiuc.edu/node99.html
    */
-
+  for (int i = 0; i < num_particles; i++) {
+    const Particle& particle = particles[i];
+    vector<LandmarkObs> transformed_observations;
+    
+    // Transform observations to map coordinate space
+    for (unsigned int j = 0; j < observations.size(); j++) {
+      const LandmarkObs& observation = observations[j];
+      LandmarkObs transformed_observation;
+      
+      transformed_observation.x = particle.x + cos(particle.theta) * observation.x
+                                             - sin(particle.theta) * observation.y;
+      
+      transformed_observation.y = particle.y + sin(particle.theta) * observation.x
+                                             + cos(particle.theta) * observation.y;
+      
+      transformed_observations.push_back(transformed_observation);
+    }
+  }
 }
 
 void ParticleFilter::resample() {
