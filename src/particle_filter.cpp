@@ -18,9 +18,14 @@
 
 #include "helper_functions.h"
 
+#define EPS 1e-8
+
 using std::string;
 using std::vector;
+
 using std::normal_distribution;
+using std::cos;
+using std::sin;
 
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
   
@@ -42,18 +47,42 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
       
     particles.push_back(particle);
   }
+  
+  is_initialized = true;
 }
 
 void ParticleFilter::prediction(double delta_t, double std_pos[], 
                                 double velocity, double yaw_rate) {
-  /**
-   * TODO: Add measurements to each particle and add random Gaussian noise.
-   * NOTE: When adding noise you may find std::normal_distribution 
-   *   and std::default_random_engine useful.
-   *  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
-   *  http://www.cplusplus.com/reference/random/default_random_engine/
-   */
-
+  
+  // Define probability distribution for random noise
+  normal_distribution<double> dist_x(0, std_pos[0]);
+  normal_distribution<double> dist_y(0, std_pos[1]);
+  normal_distribution<double> dist_theta(0, std_pos[2]);
+  
+  // Update particles
+  for (int i = 0; i < num_particles; i++) {
+    Particle& particle = particles[i];
+    
+    // Avoid division by zero
+    if (fabs(yaw_rate) < EPS) {
+      double distance = velocity * delta_t;
+      
+      particle.x += distance * cos(particle.theta);
+      particle.y += distance * sin(particle.theta);
+    } else {
+      double coeff = velocity / yaw_rate;
+      double new_theta = particle.theta + yaw_rate * delta_t;
+      
+      particle.x += coeff * (sin(new_theta) - sin(particle.theta));
+      particle.y += coeff * (cos(particle.theta) - cos(new_theta));
+      particle.theta = new_theta;
+    }
+    
+    // Apply random noise
+    particle.x += dist_x(generator);
+    particle.y += dist_y(generator);
+    particle.theta += dist_theta(generator);
+  }
 }
 
 void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted, 
