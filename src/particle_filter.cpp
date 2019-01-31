@@ -15,17 +15,20 @@
 #include <random>
 #include <string>
 #include <vector>
+#include <limits>
 
 #include "helper_functions.h"
 
 #define EPS 1e-8
-
+#define DOUBLE_INF std::numeric_limits<double>::infinity()
 using std::string;
 using std::vector;
 
 using std::normal_distribution;
 using std::cos;
 using std::sin;
+using std::pow;
+using std::sqrt;
 
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
   
@@ -85,17 +88,26 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
   }
 }
 
-void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted, 
+void ParticleFilter::dataAssociation(const Map& map_landmarks, 
                                      vector<LandmarkObs>& observations) {
-  /**
-   * TODO: Find the predicted measurement that is closest to each 
-   *   observed measurement and assign the observed measurement to this 
-   *   particular landmark.
-   * NOTE: this method will NOT be called by the grading code. But you will 
-   *   probably find it useful to implement this method and use it as a helper 
-   *   during the updateWeights phase.
-   */
-
+  
+  for (unsigned int i = 0; i < observations.size(); i++) {
+    LandmarkObs& observation = observations[i];
+    
+    // Associate landmark via nearest neighbor
+    double nearest_dist = DOUBLE_INF;
+    for (unsigned int j = 0; j < map_landmarks.landmark_list.size(); j++) {
+      const Map::single_landmark_s& landmark = map_landmarks.landmark_list[j];
+      
+      double dist = sqrt(pow(landmark.x_f - observation.x, 2)
+                       + pow(landmark.y_f - observation.y, 2));
+      
+      if (dist < nearest_dist) {
+        observation.id = landmark.id_i;
+        nearest_dist = dist;
+      }
+    }
+  }
 }
 
 void ParticleFilter::updateWeights(double sensor_range, double std_landmark[], 
@@ -131,6 +143,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       
       transformed_observations.push_back(transformed_observation);
     }
+    
+    dataAssociation(map_landmarks, transformed_observations);
   }
 }
 
