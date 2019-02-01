@@ -15,16 +15,24 @@
 #include <random>
 #include <string>
 #include <vector>
+#include <array>
 #include <limits>
 
 #include "helper_functions.h"
 
+#define NUM_PARTICLES 50
+
 #define EPS 1e-8
 #define DOUBLE_INF std::numeric_limits<double>::infinity()
+
 using std::string;
 using std::vector;
+using std::array;
 
 using std::normal_distribution;
+using std::discrete_distribution;
+using std::initializer_list;
+
 using std::cos;
 using std::sin;
 using std::pow;
@@ -34,7 +42,7 @@ using std::exp;
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
   
   // Set number of particles
-  num_particles = 50; 
+  num_particles = NUM_PARTICLES; 
 
   // Define probability distribution for the initial state
   normal_distribution<double> dist_x(x, std[0]);
@@ -157,13 +165,23 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 }
 
 void ParticleFilter::resample() {
-  /**
-   * TODO: Resample particles with replacement with probability proportional 
-   *   to their weight. 
-   * NOTE: You may find std::discrete_distribution helpful here.
-   *   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
-   */
-
+  
+  // Put all particle weights into a single vector
+  array<double, NUM_PARTICLES> weights;
+  for (int i = 0; i < num_particles; i++) {
+    weights[i] = particles[i].weight;
+  }
+  
+  // Create a discrete distribution from the weight array
+  discrete_distribution<int> dist(weights.begin(), weights.end());
+  
+  // Sample particles from the distribution
+  vector<Particle> resampled_particles;
+  for (int i = 0; i < num_particles; i++) {
+    int idx = dist(generator);
+    resampled_particles.push_back(particles[idx]);
+  }
+  particles = resampled_particles;
 }
 
 void ParticleFilter::SetAssociations(Particle& particle, 
