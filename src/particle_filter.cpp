@@ -149,7 +149,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     
     // Calculate particle weight
     particle.weight = 1.0;
-    for (int j = 0; j < transformed_observations.size(); j++) {
+    for (unsigned int j = 0; j < transformed_observations.size(); j++) {
       const LandmarkObs& observation = transformed_observations[j];
       const Map::single_landmark_s& landmark = map_landmarks.landmark_list[observation.id];
       
