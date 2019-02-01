@@ -20,7 +20,7 @@
 
 #include "helper_functions.h"
 
-#define NUM_PARTICLES 50
+#define NUM_PARTICLES 500
 
 #define EPS 1e-8
 #define DOUBLE_INF std::numeric_limits<double>::infinity()
@@ -70,6 +70,9 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
   normal_distribution<double> dist_x(0, std_pos[0]);
   normal_distribution<double> dist_y(0, std_pos[1]);
   normal_distribution<double> dist_theta(0, std_pos[2]);
+  
+  normal_distribution<double> dist_velocity(velocity, 0.1);
+  normal_distribution<double> dist_yaw_rate(yaw_rate, 0.1);
   
   // Update particles
   for (int i = 0; i < num_particles; i++) {
