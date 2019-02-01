@@ -112,7 +112,7 @@ void ParticleFilter::dataAssociation(const Map& map_landmarks,
                        + pow(landmark.y_f - observation.y, 2));
       
       if (dist < nearest_dist) {
-        observation.id = landmark.id_i;
+        observation.id = j;
         nearest_dist = dist;
       }
     }
